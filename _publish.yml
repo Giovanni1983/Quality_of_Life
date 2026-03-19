@@ -1,0 +1,4 @@
+- source: project
+  netlify:
+    - id: 6fb2b37e-3559-4fd4-a2b0-18c39af2a0ee
+      url: https://city-statistics.netlify.app/
