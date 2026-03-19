@@ -1,0 +1,6 @@
+---
+title: "Quality of Life in Top 10 Swiss cities `r format(Sys.time(), '%d/%m/%Y %H:%M')`"
+format: dashboard
+---
+
+{{< include qol_dash.qmd >}}

@@ -1,0 +1,43 @@
+name: Render and Deploy to Netlify
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: '*/15 * * * *'
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+
+      - name: Install system requirements for pak
+        run: |
+          sudo apt-get -y update
+          sudo apt-get -y install libcurl4-openssl-dev libssl-dev make git libsecret-1-dev
+
+      - name: Install R dependencies
+        run: |
+          Rscript -e "install.packages('renv', repos = 'https://packagemanager.posit.co/cran/latest')"
+          Rscript -e "renv::restore(repos = 'https://packagemanager.posit.co/cran/latest')"
+
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: 'release'
+
+      - name: Render and Publish 
+        uses: quarto-dev/quarto-actions/publish@v2
+        with:
+          target: netlify
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}

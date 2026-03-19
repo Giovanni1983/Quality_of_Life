@@ -1,0 +1,97 @@
+# Stats view
+
+## {.sidebar}
+
+```{ojs}
+viewof themes_new = Inputs.radio(
+  ["demography", "education", "housing" , "labour market" , "mobility" , "health"],
+  {
+    value: "demography",
+    label: "themes"
+  }
+)
+```
+
+
+```{ojs}
+//| output: false
+city_data = FileAttachment("city_stats.csv").csv({ typed: true })
+```
+
+
+```{ojs}
+//| output: false
+
+filtered_new = city_data
+  .filter(city => themes_new.includes(city.themes))
+  .map(city => ({ ...city, year: String(Math.trunc(city.year)) }))
+
+Reactable.setData('tbl-new', filtered_new)
+```
+
+## Column
+
+### Row
+
+```{r}
+
+library(leaflet)
+swiss_cities <- data.frame(
+  city = c("Winterthur", "Zurich", "Berne", "Biel/Bienne",
+           "Lucerne", "Basel", "Lugano", "Lausanne", "Geneva"),
+  lat = c(47.5000, 47.3769, 46.9480, 47.1368,
+          47.0502, 47.5596, 46.0037, 46.5197, 46.2044),
+  lon = c(8.7333, 8.5417, 7.4474, 7.2468,
+          8.3093, 7.5886, 8.9511, 6.6323, 6.1432)
+)
+
+swiss_cities %>% 
+leaflet() %>% 
+  setView(lng = 8, lat = 46.8, zoom = 7) %>%
+  addTiles() %>%
+  addCircleMarkers(~lon, ~lat, radius = 10)
+
+
+```
+
+### Row 
+
+```{ojs}
+Inputs.table(filtered_new)
+```
+
+
+## Column
+
+### Row 
+
+```{ojs}
+Plotly = require("https://cdn.plot.ly/plotly-2.27.0.min.js")
+
+treemap = {
+  const values = filtered_new.map(d => d.statistics)
+  const labels = filtered_new.map(d => d.cities)
+  const parents = filtered_new.map(d => d.themes)
+
+  const trace = {
+    type: "treemap",
+    values: values,
+    labels: labels,
+    parents: parents,
+    textinfo: "label+value+percent parent"
+  }
+
+  const div = document.createElement("div")
+  div.style.width = "100%"
+  div.style.height = "100%"
+
+  const layout = {
+    autosize: true,
+    height: window.innerHeight * 0.8,
+    margin: { t: 0, l: 0, r: 0, b: 0 }
+  }
+
+  Plotly.newPlot(div, [trace], layout, { responsive: true })
+  return div
+}
+```
